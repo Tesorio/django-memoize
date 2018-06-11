@@ -521,3 +521,31 @@ class MemoizeTestCase(SimpleTestCase):
 
         assert(a.foo(b) != result1)
         assert(a.foo(c) == result2)
+
+    def test_18_timeout_func(self):
+        def calculate_timeout():
+            return 5
+
+        @self.memoizer.memoize(timeout=calculate_timeout)
+        def big_foo(a, b):
+            return a+b+random.randrange(0, 100000)
+
+        result = big_foo(5, 2)
+
+        time.sleep(2)
+
+        assert big_foo(5, 2) == result
+
+    def test_18_timeout_func_lambda(self):
+        @self.memoizer.memoize(timeout=lambda: 50)
+        def big_foo(a, b):
+            return a+b+random.randrange(0, 100000)
+
+        result = big_foo(5, 2)
+
+        time.sleep(2)
+
+        print result
+        print big_foo(5, 2)
+
+        assert big_foo(5, 2) == result

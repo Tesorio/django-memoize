@@ -188,6 +188,7 @@ class Memoizer(object):
         """
         def make_cache_key(f, *args, **kwargs):
             _timeout = getattr(timeout, 'cache_timeout', timeout)
+            _timeout = _timeout() if callable(_timeout) else _timeout
             fname, version_data = self._memoize_version(f, args=args,
                                                         timeout=_timeout)
 
@@ -341,6 +342,7 @@ class Memoizer(object):
                     cache_key = decorated_function.make_cache_key(
                         f, *args, **kwargs
                     )
+                    print cache_key
                     rv = self.get(cache_key)
                 except Exception:
                     if settings.DEBUG:
@@ -353,9 +355,12 @@ class Memoizer(object):
                 if rv == self.default_cache_value:
                     rv = f(*args, **kwargs)
                     try:
+                        cache_timeout = decorated_function.cache_timeout
+                        timeout = cache_timeout() if callable(cache_timeout) else cache_timeout
+
                         self.set(
                             cache_key, rv,
-                            timeout=decorated_function.cache_timeout
+                            timeout=timeout,
                         )
                     except Exception:
                         if settings.DEBUG:
